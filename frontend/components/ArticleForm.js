@@ -6,30 +6,68 @@ const initialFormValues = { title: '', text: '', topic: '' }
 export default function ArticleForm(props) {
   const [values, setValues] = useState(initialFormValues)
   // ✨ where are my props? Destructure them here
+  const {
+    currentArticleId,
+    articles,
+    setCurrentArticleId,
+    updateArticle,
+    postArticle
+  } = props
+
+  
 
   useEffect(() => {
     // ✨ implement
     // Every time the `currentArticle` prop changes, we should check it for truthiness:
     // if it's truthy, we should set its title, text and topic into the corresponding
     // values of the form. If it's not, we should reset the form back to initial values.
-  })
+    if(currentArticleId) {
+      const currentArticle = articles.find((article) => article.article_id === currentArticleId)
+      setValues(currentArticle)
+    } else {
+      setValues(initialFormValues)
+    }
+  }, [currentArticleId, articles])
 
   const onChange = evt => {
-    const { id, value } = evt.target
-    setValues({ ...values, [id]: value })
+    
+    setValues({ ...values, [evt.target.id]: evt.target.value })
   }
 
   const onSubmit = evt => {
-    evt.preventDefault()
     // ✨ implement
     // We must submit a new post or update an existing one,
     // depending on the truthyness of the `currentArticle` prop.
+    evt.preventDefault()
+    if(currentArticleId) {
+      updateArticle({
+        article_id: currentArticleId,
+        article: values,
+      })
+    } else {
+      postArticle(values);
+    }
+
+    setValues(initialFormValues)
   }
+      
 
   const isDisabled = () => {
     // ✨ implement
     // Make sure the inputs have some values
+    if(values.text && values.topic && values.title) {
+      return false
+    } else {
+      return true
+    }
   }
+
+  const cancel = (e) => {
+    e.preventDefault()
+    setCurrentArticleId()
+    setValues(initialFormValues)
+  }
+
 
   return (
     // ✨ fix the JSX: make the heading display either "Edit" or "Create"
@@ -58,7 +96,7 @@ export default function ArticleForm(props) {
       </select>
       <div className="button-group">
         <button disabled={isDisabled()} id="submitArticle">Submit</button>
-        <button onClick={Function.prototype}>Cancel edit</button>
+        <button onClick={(e) => cancel(e)}>Cancel edit</button>
       </div>
     </form>
   )
